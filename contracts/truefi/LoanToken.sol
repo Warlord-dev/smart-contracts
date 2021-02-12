@@ -78,7 +78,7 @@ contract LoanToken is ILoanToken, ERC20 {
     /**
      * @dev Emitted when term is over
      * @param status Final loan status
-     * @param returnedAmount Amount that was retured before expiry
+     * @param returnedAmount Amount that was returned before expiry
      */
     event Closed(Status status, uint256 returnedAmount);
 
@@ -94,13 +94,13 @@ contract LoanToken is ILoanToken, ERC20 {
     /**
      * @dev Emitted when a LoanToken is repaid by the borrower in underlying currencyTokens
      * @param repayer Sender of currencyTokens
-     * @param repaidAmound Amount of currencyToken repaid
+     * @param repaidAmount Amount of currencyToken repaid
      */
-    event Repaid(address repayer, uint256 repaidAmound);
+    event Repaid(address repayer, uint256 repaidAmount);
 
     /**
      * @dev Emitted when borrower reclaims remaining currencyTokens
-     * @param borrower Reveiver of remaining currencyTokens
+     * @param borrower Receiver of remaining currencyTokens
      * @param reclaimedAmount Amount of currencyTokens repaid
      */
     event Reclaimed(address borrower, uint256 reclaimedAmount);
@@ -114,7 +114,7 @@ contract LoanToken is ILoanToken, ERC20 {
     /**
      * @dev Create a Loan
      * @param _currencyToken Token to lend
-     * @param _borrower Borrwer addresss
+     * @param _borrower Borrower address
      * @param _amount Borrow amount of currency tokens
      * @param _term Loan length
      * @param _apy Loan APY
@@ -162,7 +162,7 @@ contract LoanToken is ILoanToken, ERC20 {
      * @dev Only when loan is Settled
      */
     modifier onlyClosed() {
-        require(status == Status.Settled || status == Status.Defaulted, "LoanToken: Current status should be Settled or Defaulted");
+        require(status >= Status.Settled, "LoanToken: Current status should be Settled or Defaulted");
         _;
     }
 
@@ -229,7 +229,7 @@ contract LoanToken is ILoanToken, ERC20 {
      * @dev Return true if this contract is a LoanToken
      * @return True if this contract is a LoanToken
      */
-    function isLoanToken() external override pure returns (bool) {
+    function isLoanToken() external pure override returns (bool) {
         return true;
     }
 
@@ -239,8 +239,8 @@ contract LoanToken is ILoanToken, ERC20 {
      */
     function getParameters()
         external
-        override
         view
+        override
         returns (
             uint256,
             uint256,
@@ -256,7 +256,7 @@ contract LoanToken is ILoanToken, ERC20 {
      * @param _balance number of LoanTokens to get value for
      * @return coupon value of _balance LoanTokens in currencyTokens
      */
-    function value(uint256 _balance) external override view returns (uint256) {
+    function value(uint256 _balance) external view override returns (uint256) {
         if (_balance == 0) {
             return 0;
         }
@@ -380,10 +380,10 @@ contract LoanToken is ILoanToken, ERC20 {
 
     /**
      * @dev Check how much was already repaid
-     * Funds stored on the contract's addres plus funds already redeemed by lenders
+     * Funds stored on the contract's address plus funds already redeemed by lenders
      * @return Uint256 representing what value was already repaid
      */
-    function repaid() external override view onlyAfterWithdraw returns (uint256) {
+    function repaid() external view override onlyAfterWithdraw returns (uint256) {
         return _balance().add(redeemed);
     }
 
@@ -391,7 +391,7 @@ contract LoanToken is ILoanToken, ERC20 {
      * @dev Public currency token balance function
      * @return currencyToken balance of this contract
      */
-    function balance() external override view returns (uint256) {
+    function balance() external view override returns (uint256) {
         return _balance();
     }
 
@@ -407,7 +407,7 @@ contract LoanToken is ILoanToken, ERC20 {
      * @dev Calculate amount borrowed minus fee
      * @return Amount minus fees
      */
-    function receivedAmount() public override view returns (uint256) {
+    function receivedAmount() public view override returns (uint256) {
         return amount.sub(amount.mul(borrowerFee).div(10000));
     }
 
@@ -425,7 +425,7 @@ contract LoanToken is ILoanToken, ERC20 {
      * @dev get profit for this loan
      * @return profit for this loan
      */
-    function profit() external override view returns (uint256) {
+    function profit() external view override returns (uint256) {
         return debt.sub(amount);
     }
 
